@@ -506,13 +506,7 @@ h2{font-size:1rem;font-weight:600;color:var(--ink-soft);margin-bottom:8px}
 
   /* 禁止雙指縮放（iOS） */
   document.addEventListener('gesturestart', function(e){ e.preventDefault(); });
-  var lastTouch = 0;
-  document.addEventListener('touchend', function(e){
-    var now = Date.now();
-    if (now - lastTouch < 300) e.preventDefault();
-    lastTouch = now;
-  }, { passive:false });
-
+ 
   buildChoices('objList', OBJECTS, true);
   buildChoices('unitList', UNITS, false);
   markSelected('objList', state.obj.id);

@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>天平小實驗</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700&family=Chiron+GoRound+TC:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#faf6ec;
+  --grid:rgba(40,70,130,.09);
+  --ink:#1f2f55;
+  --ink-soft:#5a6a8a;
+  --card:#fffdf7;
+  --line:#d9d2bf;
+  --hl:#f4c430;
+  --hl-soft:#fff3c4;
+  --ok:#2e9e5b;
+  --bad:#d9534f;
+  --metal:#9db4d3;
+  --metal-dark:#56789f;
+  --pan:#4f7cb8;
+  --pan-dark:#36598c;
+  --string:#6f737c;
+  --book:#3f8fd0;
+  --book-dark:#2c6ea6;
+  --label:#ffffff;
+  --glue:#8a6ad0;
+  --glue-cap:#5d43a3;
+  --bottle:#f4f1ea;
+  --bottle-line:#9aa3b5;
+  --cap-red:#e2483d;
+  --cube:#ec7a3f;
+  --cube-dark:#b9552a;
+  --cube-light:#f6a679;
+  --marble:#5aa85c;
+  --marble-dark:#2f7a3a;
+  --scis-blade:#b6c0cc;
+  --scis-blade-dark:#7d8896;
+  --scis-handle:#e39a2a;
+  --badge:#1f2f55;
+  --badge-text:#ffffff;
+  --radius:14px;
+  --gap:10px;
+  --pad:14px;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --paper:#1a2132;
+    --grid:rgba(180,200,240,.07);
+    --ink:#e8ecf5;
+    --ink-soft:#a7b2c9;
+    --card:#242e45;
+    --line:#3a4663;
+    --hl:#f4c430;
+    --hl-soft:#4a4126;
+    --metal:#7f96b6;
+    --metal-dark:#5d7798;
+    --pan:#5a87c4;
+    --pan-dark:#3f669c;
+    --string:#a2a8b4;
+    --label:#eef1f6;
+    --bottle:#dcd8cf;
+    --badge:#f4c430;
+    --badge-text:#1f2f55;
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px;-webkit-text-size-adjust:100%;touch-action:manipulation}
+body{
+  font-family:"Chiron GoRound TC",system-ui,sans-serif;
+  color:var(--ink);
+  background-color:var(--paper);
+  background-image:
+    linear-gradient(var(--grid) 1px,transparent 1px),
+    linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:22px 22px;
+  min-height:100vh;
+  touch-action:manipulation;
+  -webkit-user-select:none;user-select:none;
+  -webkit-tap-highlight-color:transparent;
+}
+.app{
+  max-width:520px;margin:0 auto;
+  padding:12px 16px calc(16px + env(safe-area-inset-bottom));
+  display:flex;flex-direction:column;gap:12px;
+}
+h1{font-size:1.4rem;font-weight:700;text-align:center;letter-spacing:.08em;padding-top:4px}
+.panel{
+  background:var(--card);
+  border:2px solid var(--line);
+  border-radius:var(--radius);
+  padding:var(--pad);
+}
+h2{font-size:1rem;font-weight:600;color:var(--ink-soft);margin-bottom:8px}
+.choices{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--gap)}
+.choice{
+  font:inherit;color:var(--ink);
+  background:var(--paper);
+  border:2px solid var(--line);
+  border-radius:12px;
+  padding:8px 4px 6px;
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  cursor:pointer;touch-action:manipulation;
+  font-size:1rem;font-weight:600;
+}
+.choice svg{width:3rem;height:3rem}
+.choice[aria-pressed="true"]{border-color:var(--hl);background:var(--hl-soft);box-shadow:0 0 0 2px var(--hl)}
+.stage{display:flex;justify-content:center}
+#balance{width:100%;height:auto;display:block}
+.ctrl{display:grid;grid-template-columns:1fr 1fr 1fr;gap:var(--gap);margin-top:12px}
+.btn{
+  font-family:"Baloo 2","Chiron GoRound TC",sans-serif;
+  font-size:1.5rem;font-weight:700;
+  color:var(--ink);background:var(--paper);
+  border:2px solid var(--ink);
+  border-radius:12px;
+  padding:8px 0;min-height:56px;
+  cursor:pointer;touch-action:manipulation;
+  font-variant-numeric:tabular-nums;
+}
+.btn.plus{background:var(--ink);color:var(--paper)}
+.btn.clear{font-family:"Chiron GoRound TC",sans-serif;font-size:1.1rem;border-color:var(--line);color:var(--ink-soft)}
+.btn:active{transform:scale(.96)}
+.btn:disabled{opacity:.35;cursor:default;transform:none}
+
+/* SVG 樣式 */
+.f-metal{fill:var(--metal)}
+.f-metal-dark{fill:var(--metal-dark)}
+.f-pan{fill:var(--pan)}
+.f-pan-dark{fill:var(--pan-dark)}
+.s-string{stroke:var(--string);stroke-width:1.6;fill:none}
+.s-tick{stroke:var(--ink-soft);stroke-width:2;stroke-linecap:round}
+.s-tick0{stroke:var(--hl);stroke-width:3.5;stroke-linecap:round}
+.s-needle{stroke:var(--ink);stroke-width:3;stroke-linecap:round}
+.f-ink{fill:var(--ink)}
+.f-book{fill:var(--book)}
+.f-book-dark{fill:var(--book-dark)}
+.f-label{fill:var(--label)}
+.s-label{stroke:var(--book-dark);stroke-width:3;stroke-linecap:round}
+.f-glue{fill:var(--glue)}
+.f-glue-cap{fill:var(--glue-cap)}
+.f-glue-band{fill:var(--label);opacity:.85}
+.f-bottle{fill:var(--bottle);stroke:var(--bottle-line);stroke-width:2.5}
+.f-cap-red{fill:var(--cap-red)}
+.f-bottle-band{fill:var(--cap-red);opacity:.85}
+.f-cube{fill:var(--cube);stroke:var(--cube-dark);stroke-width:5}
+.f-cube-top{fill:var(--cube-light)}
+.f-marble{fill:var(--marble);stroke:var(--marble-dark);stroke-width:4}
+.s-marble-swirl{stroke:var(--marble-dark);stroke-width:6;fill:none;stroke-linecap:round;opacity:.8}
+.f-shine{fill:#ffffff;opacity:.7}
+.f-blade{fill:var(--scis-blade);stroke:var(--scis-blade-dark);stroke-width:3;stroke-linejoin:round}
+.s-handle{stroke:var(--scis-handle);stroke-width:9;fill:none}
+.f-pin{fill:var(--scis-blade-dark)}
+.f-badge{fill:var(--badge)}
+.t-badge{fill:var(--badge-text);font-family:"Baloo 2",sans-serif;font-weight:700;font-size:22px;font-variant-numeric:tabular-nums}
+
+/* iPad：固定在一個畫面高度內，避免課堂操作時需要上下捲動。 */
+@media (min-width:700px){
+  html,body{width:100%;height:100%;height:100dvh;overflow:hidden}
+  html{font-size:18px}
+  .app{
+    width:100%;max-width:none;height:100%;
+    margin:0;padding:12px max(18px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(18px, env(safe-area-inset-left));
+    gap:10px;
+  }
+  :root{--radius:16px;--gap:10px;--pad:12px}
+  h1{font-size:1.35rem;line-height:1.2;padding-top:0}
+  h2{font-size:.9rem;margin-bottom:6px}
+  .choice{font-size:.9rem;padding:6px 4px;gap:2px}
+  .choice svg{width:2.8rem;height:2.8rem}
+  .btn{font-size:1.3rem;min-height:52px;padding:5px 0}
+  .btn.clear{font-size:.95rem}
+}
+
+/* iPad 橫向：三個工作區同時可見。 */
+@media (min-width:900px) and (orientation:landscape){
+  .app{
+    display:grid;
+    grid-template-columns:minmax(190px, .9fr) minmax(360px, 1.35fr) minmax(190px, .9fr);
+    grid-template-rows:auto minmax(0, 1fr);
+    align-items:stretch;
+  }
+  h1{grid-column:1 / -1}
+  .panel{min-height:0;height:100%;display:flex;flex-direction:column}
+  .panel:first-of-type{grid-column:1;grid-row:2}
+  .stage{grid-column:2;grid-row:2;min-height:0;align-items:center}
+  .panel:last-of-type{grid-column:3;grid-row:2}
+  .choices{grid-template-columns:1fr;flex:1;min-height:0}
+  .choice{justify-content:center}
+  #balance{width:100%;height:100%;max-width:100%;max-height:100%}
+  .ctrl{margin-top:10px}
+}
+
+/* iPad 直向：保留由上至下的閱讀順序，但各區塊會自動收合至單頁。 */
+@media (min-width:700px) and (orientation:portrait){
+  .app{display:grid;grid-template-rows:auto auto minmax(0, 1fr) auto}
+  .stage{min-height:0;align-items:center}
+  #balance{height:100%;max-height:390px;width:auto;max-width:100%}
+  .panel{padding:10px 14px}
+  .choices{gap:8px}
+  .choice{padding:4px}
+  .choice svg{width:2.5rem;height:2.5rem}
+  .ctrl{margin-top:8px}
+}
+@media (prefers-reduced-motion: reduce){
+  .btn:active{transform:none}
+}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-book" viewBox="0 0 100 100">
+      <rect x="14" y="6" width="72" height="94" rx="4" class="f-book"/>
+      <rect x="14" y="6" width="12" height="94" rx="3" class="f-book-dark"/>
+      <rect x="36" y="22" width="40" height="26" rx="3" class="f-label"/>
+      <line x1="42" y1="31" x2="70" y2="31" class="s-label"/>
+      <line x1="42" y1="39" x2="62" y2="39" class="s-label"/>
+    </symbol>
+    <symbol id="i-glue" viewBox="0 0 100 100">
+      <rect x="6" y="66" width="62" height="32" rx="7" class="f-glue"/>
+      <rect x="20" y="72" width="32" height="20" rx="4" class="f-glue-band"/>
+      <rect x="64" y="63" width="30" height="37" rx="7" class="f-glue-cap"/>
+    </symbol>
+    <symbol id="i-yakult" viewBox="0 0 100 100">
+      <path class="f-bottle" d="M38 22 H62 V30 C62 38 72 40 72 52 C72 60 64 64 64 72 C64 80 70 84 70 92 Q70 99 61 99 H39 Q30 99 30 92 C30 84 36 80 36 72 C36 64 28 60 28 52 C28 40 38 38 38 30 Z"/>
+      <rect x="33" y="44" width="34" height="14" rx="3" class="f-bottle-band"/>
+      <rect x="35" y="6" width="30" height="17" rx="4" class="f-cap-red"/>
+    </symbol>
+    <symbol id="i-cube" viewBox="0 0 100 100">
+      <rect x="4" y="4" width="92" height="92" rx="12" class="f-cube"/>
+      <rect x="18" y="16" width="64" height="18" rx="8" class="f-cube-top"/>
+    </symbol>
+    <symbol id="i-marble" viewBox="0 0 100 100">
+      <circle cx="50" cy="50" r="45" class="f-marble"/>
+      <path d="M24 60 C36 40 58 66 76 40" class="s-marble-swirl"/>
+      <ellipse cx="36" cy="30" rx="11" ry="7" class="f-shine"/>
+    </symbol>
+    <symbol id="i-scissors" viewBox="0 0 100 100">
+      <path class="f-blade" d="M47 56 L72 6 L80 10 L56 60 Z"/>
+      <path class="f-blade" d="M53 56 L28 6 L20 10 L44 60 Z"/>
+      <circle cx="31" cy="78" r="15" class="s-handle"/>
+      <circle cx="69" cy="78" r="15" class="s-handle"/>
+      <circle cx="50" cy="52" r="5" class="f-pin"/>
+    </symbol>
+  </defs>
+</svg>
+
+<main class="app">
+  <h1>天平小實驗</h1>
+
+  <section class="panel">
+    <h2>物件</h2>
+    <div class="choices" id="objList"></div>
+  </section>
+
+  <section class="stage">
+    <svg id="balance" viewBox="0 0 400 372" role="img" aria-label="天平">
+      <!-- 刻度板 -->
+      <g>
+        <line class="s-tick" x1="200" y1="22" x2="200" y2="34" transform="rotate(-24 200 86)"/>
+        <line class="s-tick" x1="200" y1="22" x2="200" y2="34" transform="rotate(-12 200 86)"/>
+        <line class="s-tick0" x1="200" y1="20" x2="200" y2="34"/>
+        <line class="s-tick" x1="200" y1="22" x2="200" y2="34" transform="rotate(12 200 86)"/>
+        <line class="s-tick" x1="200" y1="22" x2="200" y2="34" transform="rotate(24 200 86)"/>
+      </g>
+      <!-- 支架 -->
+      <rect x="193" y="86" width="14" height="258" rx="4" class="f-metal-dark"/>
+      <rect x="120" y="340" width="160" height="22" rx="10" class="f-metal-dark"/>
+      <!-- 左盤 -->
+      <g id="panL">
+        <circle cx="0" cy="4" r="4" class="f-metal-dark"/>
+        <line class="s-string" x1="0" y1="6" x2="-60" y2="190"/>
+        <line class="s-string" x1="0" y1="6" x2="60" y2="190"/>
+        <line class="s-string" x1="0" y1="6" x2="-18" y2="192"/>
+        <g id="objSlot"></g>
+        <path class="f-pan" d="M-66 188 H66 L52 208 Q50 211 46 211 H-46 Q-50 211 -52 208 Z"/>
+        <rect x="-68" y="186" width="136" height="5" rx="2.5" class="f-pan-dark"/>
+      </g>
+      <!-- 右盤 -->
+      <g id="panR">
+        <circle cx="0" cy="4" r="4" class="f-metal-dark"/>
+        <line class="s-string" x1="0" y1="6" x2="-60" y2="190"/>
+        <line class="s-string" x1="0" y1="6" x2="60" y2="190"/>
+        <line class="s-string" x1="0" y1="6" x2="-18" y2="192"/>
+        <g id="pile"></g>
+        <path class="f-pan" d="M-66 188 H66 L52 208 Q50 211 46 211 H-46 Q-50 211 -52 208 Z"/>
+        <rect x="-68" y="186" width="136" height="5" rx="2.5" class="f-pan-dark"/>
+        <g id="badge" visibility="hidden">
+          <rect x="-34" y="220" width="68" height="32" rx="16" class="f-badge"/>
+          <text id="badgeText" x="0" y="244" text-anchor="middle" class="t-badge">× 0</text>
+        </g>
+      </g>
+      <!-- 橫桿 -->
+      <g id="beam">
+        <line class="s-needle" x1="200" y1="86" x2="200" y2="30"/>
+        <rect x="62" y="80" width="276" height="12" rx="6" class="f-metal"/>
+        <rect x="62" y="78" width="12" height="16" rx="4" class="f-metal-dark"/>
+        <rect x="326" y="78" width="12" height="16" rx="4" class="f-metal-dark"/>
+        <circle cx="200" cy="86" r="9" class="f-metal-dark"/>
+        <circle cx="200" cy="86" r="3.5" class="f-ink"/>
+      </g>
+    </svg>
+  </section>
+
+  <section class="panel">
+    <h2>自訂單位</h2>
+    <div class="choices" id="unitList"></div>
+    <div class="ctrl">
+      <button class="btn minus" id="minus" type="button">－1</button>
+      <button class="btn plus" id="plus" type="button">＋1</button>
+      <button class="btn clear" id="clear" type="button">清空</button>
+    </div>
+  </section>
+</main>
+
+<script>
+(function(){
+  'use strict';
+
+  /* 物件與單位設定（重量只供內部計算，不會顯示） */
+  var OBJECTS = [
+    { id:'book',   name:'數學簿', w:60,  icon:'i-book' },
+    { id:'glue',   name:'漿糊筆', w:40,  icon:'i-glue' },
+    { id:'yakult', name:'益力多', w:100, icon:'i-yakult' }
+  ];
+  var UNITS = [
+    { id:'cube',   name:'數粒', w:1,  icon:'i-cube',     dMax:22, rowK:1.0  },
+    { id:'marble', name:'波子', w:5,  icon:'i-marble',   dMax:24, rowK:0.87 },
+    { id:'scis',   name:'剪刀', w:45, icon:'i-scissors', dMax:40, rowK:0.8  }
+  ];
+  var MAX_COUNT = 200;          // 防止畫面無限增長
+  var PIVOT_X = 200, PIVOT_Y = 86, ARM = 130;
+  var PAN_TOP = 188, PILE_BASE = 194, PILE_W = 112, OBJ_SIZE = 86;
+  var MAX_TILT = 14, MIN_TILT = 4;
+
+  var SVGNS = 'http://www.w3.org/2000/svg';
+  var XLINK = 'http://www.w3.org/1999/xlink';
+
+  var state = { obj: OBJECTS[0], unit: UNITS[0], count: 0 };
+  var curAngle = 0, targetAngle = 0, animId = null;
+
+  var reduceMotion = false;
+  try { reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch(e){}
+
+  var el = function(id){ return document.getElementById(id); };
+  var beam = el('beam'), panL = el('panL'), panR = el('panR');
+  var pile = el('pile'), objSlot = el('objSlot');
+  var badge = el('badge'), badgeText = el('badgeText');
+  var btnPlus = el('plus'), btnMinus = el('minus'), btnClear = el('clear');
+
+  function makeUse(icon, x, y, size){
+    var u = document.createElementNS(SVGNS, 'use');
+    u.setAttribute('href', '#' + icon);
+    u.setAttributeNS(XLINK, 'xlink:href', '#' + icon);
+    u.setAttribute('x', x.toFixed(2));
+    u.setAttribute('y', y.toFixed(2));
+    u.setAttribute('width', size.toFixed(2));
+    u.setAttribute('height', size.toFixed(2));
+    return u;
+  }
+
+  function iconSvg(icon){
+    return '<svg viewBox="0 0 100 100" aria-hidden="true"><use href="#' + icon + '" xlink:href="#' + icon + '"/></svg>';
+  }
+
+  function buildChoices(listId, items, isObj){
+    var box = el(listId);
+    items.forEach(function(it){
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'choice';
+      b.dataset.id = it.id;
+      b.innerHTML = iconSvg(it.icon) + '<span>' + it.name + '</span>';
+      b.addEventListener('click', function(){ isObj ? selectObj(it) : selectUnit(it); });
+      box.appendChild(b);
+    });
+  }
+
+  function markSelected(listId, id){
+    var btns = el(listId).querySelectorAll('.choice');
+    for (var i = 0; i < btns.length; i++){
+      btns[i].setAttribute('aria-pressed', btns[i].dataset.id === id ? 'true' : 'false');
+    }
+  }
+
+  function selectObj(o){
+    state.obj = o;
+    markSelected('objList', o.id);
+    renderObject();
+    updateTilt();
+  }
+
+  function selectUnit(u){
+    if (state.unit.id === u.id) return;
+    state.unit = u;
+    state.count = 0;           // 一次只用一種單位：轉換時清空右盤
+    markSelected('unitList', u.id);
+    renderPile();
+    updateTilt();
+  }
+
+  function renderObject(){
+    while (objSlot.firstChild) objSlot.removeChild(objSlot.firstChild);
+    objSlot.appendChild(makeUse(state.obj.icon, -OBJ_SIZE/2, PILE_BASE - OBJ_SIZE, OBJ_SIZE));
+  }
+
+  /* 金字塔式疊放：底層最闊，向上每層少一個 */
+  function pileLayout(n, unit){
+    var pos = [];
+    if (n <= 0) return { d:0, pos:pos };
+    var bMin = Math.max(1, Math.floor(PILE_W / unit.dMax));
+    var bTri = Math.ceil((Math.sqrt(8*n + 1) - 1) / 2);
+    var b = Math.max(bMin, bTri);
+    var d = Math.min(unit.dMax, PILE_W / b);
+    var left = n, row = 0;
+    while (left > 0){
+      var cap = b - row;
+      var c = Math.min(cap, left);
+      var y = PILE_BASE - d - row * d * unit.rowK;
+      var x0 = -c * d / 2;
+      for (var i = 0; i < c; i++) pos.push([x0 + i*d, y]);
+      left -= c; row++;
+    }
+    return { d:d, pos:pos };
+  }
+
+  function renderPile(){
+    while (pile.firstChild) pile.removeChild(pile.firstChild);
+    var lay = pileLayout(state.count, state.unit);
+    var frag = document.createDocumentFragment();
+    lay.pos.forEach(function(p){ frag.appendChild(makeUse(state.unit.icon, p[0], p[1], lay.d)); });
+    pile.appendChild(frag);
+    if (state.count > 0){
+      badgeText.textContent = '× ' + state.count;
+      badge.setAttribute('visibility', 'visible');
+    } else {
+      badge.setAttribute('visibility', 'hidden');
+    }
+    btnMinus.disabled = state.count <= 0;
+    btnClear.disabled = state.count <= 0;
+    btnPlus.disabled = state.count >= MAX_COUNT;
+  }
+
+  /* 正數 = 左邊較重（左盤下沉）；稍有差距也要看得出傾斜 */
+  function tiltFor(diff){
+    if (diff === 0) return 0;
+    var mag = MIN_TILT + (MAX_TILT - MIN_TILT) * Math.min(Math.abs(diff) / 50, 1);
+    return diff > 0 ? mag : -mag;
+  }
+
+  function updateTilt(){
+    targetAngle = tiltFor(state.obj.w - state.unit.w * state.count);
+    if (reduceMotion){ curAngle = targetAngle; drawAngle(curAngle); return; }
+    if (!animId) animId = requestAnimationFrame(step);
+  }
+
+  function step(){
+    var delta = targetAngle - curAngle;
+    if (Math.abs(delta) < 0.02){ curAngle = targetAngle; drawAngle(curAngle); animId = null; return; }
+    curAngle += delta * 0.12;
+    drawAngle(curAngle);
+    animId = requestAnimationFrame(step);
+  }
+
+  function drawAngle(a){
+    var r = a * Math.PI / 180;
+    var cx = ARM * Math.cos(r), sy = ARM * Math.sin(r);
+    beam.setAttribute('transform', 'rotate(' + (-a).toFixed(3) + ' ' + PIVOT_X + ' ' + PIVOT_Y + ')');
+    panL.setAttribute('transform', 'translate(' + (PIVOT_X - cx).toFixed(2) + ' ' + (PIVOT_Y + sy + 6).toFixed(2) + ')');
+    panR.setAttribute('transform', 'translate(' + (PIVOT_X + cx).toFixed(2) + ' ' + (PIVOT_Y - sy + 6).toFixed(2) + ')');
+  }
+
+  btnPlus.addEventListener('click', function(){
+    if (state.count >= MAX_COUNT) return;
+    state.count++; renderPile(); updateTilt();
+  });
+  btnMinus.addEventListener('click', function(){
+    if (state.count <= 0) return;
+    state.count--; renderPile(); updateTilt();
+  });
+  btnClear.addEventListener('click', function(){
+    state.count = 0; renderPile(); updateTilt();
+  });
+
+  /* 禁止雙指縮放（iOS） */
+  document.addEventListener('gesturestart', function(e){ e.preventDefault(); });
+  var lastTouch = 0;
+  document.addEventListener('touchend', function(e){
+    var now = Date.now();
+    if (now - lastTouch < 300) e.preventDefault();
+    lastTouch = now;
+  }, { passive:false });
+
+  buildChoices('objList', OBJECTS, true);
+  buildChoices('unitList', UNITS, false);
+  markSelected('objList', state.obj.id);
+  markSelected('unitList', state.unit.id);
+  renderObject();
+  renderPile();
+  curAngle = targetAngle = tiltFor(state.obj.w);
+  drawAngle(curAngle);
+
+  /* 測試用 */
+  window.__balance = { state:state, OBJECTS:OBJECTS, UNITS:UNITS, tiltFor:tiltFor };
+})();
+</script>
+</body>
+</html>

@@ -167,8 +167,8 @@ h2{font-size:1rem;font-weight:600;color:var(--ink-soft);margin-bottom:8px}
     gap:10px;
   }
   :root{--radius:16px;--gap:10px;--pad:12px}
-  h1{font-size:1.35rem;line-height:1.2;padding-top:0}
-  h2{font-size:.9rem;margin-bottom:6px}
+  h1{font-size:1.85rem;line-height:1.2;padding-top:0}
+  h2{font-size:1.3rem;margin-bottom:8px}
   .choice{font-size:.9rem;padding:6px 4px;gap:2px}
   .choice svg{width:2.8rem;height:2.8rem}
   .btn{font-size:1.3rem;min-height:52px;padding:5px 0}
@@ -180,18 +180,35 @@ h2{font-size:1rem;font-weight:600;color:var(--ink-soft);margin-bottom:8px}
   .app{
     display:grid;
     grid-template-columns:minmax(190px, .9fr) minmax(360px, 1.35fr) minmax(190px, .9fr);
-    grid-template-rows:auto minmax(0, 1fr);
+    grid-template-rows:minmax(0, 1fr);
     align-items:stretch;
+    position:relative;
   }
-  h1{grid-column:1 / -1}
+  /* 標題只放在中央天平區上方，並不佔用兩側操作面板的高度。 */
+  h1{
+    position:absolute;
+    z-index:1;
+    top:clamp(60px, 9vh, 90px);
+    left:28.5%;
+    width:43%;
+    font-size:clamp(2.25rem, 3.8vw, 3.3rem);
+    line-height:1.1;
+    pointer-events:none;
+  }
   .panel{min-height:0;height:100%;display:flex;flex-direction:column}
-  .panel:first-of-type{grid-column:1;grid-row:2}
-  .stage{grid-column:2;grid-row:2;min-height:0;align-items:center}
-  .panel:last-of-type{grid-column:3;grid-row:2}
-  .choices{grid-template-columns:1fr;flex:1;min-height:0}
-  .choice{justify-content:center}
+  .panel:first-of-type{grid-column:1;grid-row:1}
+  .stage{grid-column:2;grid-row:1;min-height:0;align-items:center;padding-top:clamp(80px, 13vh, 130px)}
+  .panel:last-of-type{grid-column:3;grid-row:1}
+  .choices{
+    grid-template-columns:1fr;
+    grid-template-rows:repeat(3, clamp(88px, 13vh, 112px));
+    flex:none;
+    min-height:0;
+  }
+  .choice{justify-content:center;font-size:1.1rem;padding:4px}
+  .choice svg{width:3.1rem;height:3.1rem}
   #balance{width:100%;height:100%;max-width:100%;max-height:100%}
-  .ctrl{margin-top:10px}
+  .ctrl{margin-top:auto;padding-top:10px}
 }
 
 /* iPad 直向：保留由上至下的閱讀順序，但各區塊會自動收合至單頁。 */
